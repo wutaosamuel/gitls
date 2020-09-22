@@ -48,6 +48,9 @@ func cutMessage(message string) map[string][]string {
 	}
 
 	result := make(map[string][]string, 0)
+	result["push"] = make([]string, 0)
+	result["pull"] = make([]string, 0)
+	result["remote"] = make([]string, 0)
 	// last line of message maybe blank -> do nothing of any blank line
 	// may reverse order of result
 	for i := len(mLines) - 1; i >= 0; i-- {
@@ -86,8 +89,8 @@ func cutMessage(message string) map[string][]string {
 	return result
 }
 
-// getPushStatus get branch status for push
-func getPushStatus(message string) map[string]string {
+// GetPushStatus get branch status for push
+func GetPushStatus(message string) map[string]string {
 	words := strings.Fields(message)
 	branch := words[0]
 	rgx := regexp.MustCompile(`\((.*?)\)`)
