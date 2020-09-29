@@ -33,49 +33,15 @@ func Main() {
 	// handle input
 	// handle single input
 	if *inputFlag != "" {
-		// check dir is exist && get absolute path
-		dir, err := filepath.Abs(*inputFlag)
-		if err != nil {
-			printErrorUsage(err)
-		}
-		isDir, err := IsDir(dir)
-		if err != nil {
-			printErrorUsage(err)
-		}
-		if !isDir {
-			fmt.Println(dir + " is not a directory")
-			fmt.Println()
-			pflag.Usage()
-			os.Exit(0)
-		}
-		fmt.Println(dir)
-		dirs = getDirs(dir)
+		dirs = handleInput(*inputFlag)
 	}
 	// handle inputs
 	if len(*inputsFlag) != 0 {
-		for _, v := range *inputsFlag {
-			dir, err := filepath.Abs(v)
-			if err != nil {
-				fmt.Print(dir + ": ")
-				fmt.Println(err)
-			}
-			isDir, err := IsDir(dir)
-			if err != nil {
-				fmt.Print(dir + ": ")
-				fmt.Println(err)
-			}
-			if isDir {
-				dirs = append(dirs, dir)
-			}
-		}
+		dirs = handleInputs(*inputsFlag)
 	}
 	// default input
 	if *inputFlag == "" && len(*inputsFlag) == 0 {
-		dir, err := os.Getwd()
-		if err != nil {
-			printErrorUsage(err)
-		}
-		dirs = getDirs(dir)
+		dirs = handleNoInput()
 	}
 
 	// get git dirs
@@ -94,42 +60,18 @@ func Main() {
 	// display git infomation by flag
 	// display -a | --all
 	if *allFlag {
-		for _, g := range gits {
-			if len(g.Remotes) == 0 {
-				fmt.Println(g.Dir, ":")
-				fmt.Println("-> ", "no upstream remote")
-				fmt.Println()
-				continue
-			}
-			fmt.Print(g.AllString())
-		}
+		handleAllDisplay(gits)
 	}
 	// display -u | --url
 	if *urlFlag {
-		for _, g := range gits {
-			if len(g.Remotes) == 0 {
-				fmt.Println(g.Dir, ":")
-				fmt.Println("-> ", "no upstream remote")
-				fmt.Println()
-				continue
-			}
-			fmt.Print(g.URLWithDirString())
-		}
+		handleURLDisplay(gits)
 	}
 	// display default output
 	if !*allFlag && !*urlFlag {
-		for _, g := range gits {
-			if len(g.Remotes) == 0 {
-				fmt.Println(g.Dir, ":")
-				fmt.Println("-> ", "no upstream remote")
-				fmt.Println()
-				continue
-			}
-			fmt.Print(g.DefaultString())
-		}
+		handleDefaultDisplay(gits)
 	}
 
-	// display dir infomation if No. of dir > 0
+	// display non-git dir infomation if No. of dir > 0
 	if len(dir) > 0 {
 		fmt.Println()
 		fmt.Println("The following folders is not initialized by git: ")
@@ -140,6 +82,109 @@ func Main() {
 	}
 
 	return
+}
+
+// handleInput handle single input
+/*
+ *	Output:
+ *	- get input folder
+ *  - get sub-folder under input folder
+ */
+func handleInput(input string) []string {
+	// check dir is exist && get absolute path
+	dir, err := filepath.Abs(input)
+	if err != nil {
+		printErrorUsage(err)
+	}
+	isDir, err := IsDir(dir)
+	if err != nil {
+		printErrorUsage(err)
+	}
+	if !isDir {
+		fmt.Println(dir + " is not a directory")
+		fmt.Println()
+		pflag.Usage()
+		os.Exit(0)
+	}
+	dirs := getDirs(dir)
+
+	return dirs
+}
+
+// handleInputs handle inputs
+/*
+ *	- get absolute path of directories
+ *	- check it is directory
+ */
+func handleInputs(inputs []string) []string {
+	var dirs []string
+	for _, v := range inputs {
+		dir, err := filepath.Abs(v)
+		if err != nil {
+			fmt.Print(dir + ": ")
+			fmt.Println(err)
+		}
+		isDir, err := IsDir(dir)
+		if err != nil {
+			fmt.Print(dir + ": ")
+			fmt.Println(err)
+		}
+		if isDir {
+			dirs = append(dirs, dir)
+		}
+	}
+
+	return dirs
+}
+
+// handleNoInput process no input or inputs, which is default input
+func handleNoInput() []string {
+	dir, err := os.Getwd()
+	if err != nil {
+		printErrorUsage(err)
+	}
+	dirs := getDirs(dir)
+
+	return dirs
+}
+
+// handleAllDisplay display remote name && pull&push url && branch -> status
+func handleAllDisplay(gits []*GitRepo) {
+	for _, g := range gits {
+		if len(g.Remotes) == 0 {
+			fmt.Println(g.Dir, ":")
+			fmt.Println("-> ", "no upstream remote")
+			fmt.Println()
+			continue
+		}
+		fmt.Print(g.AllString())
+	}
+}
+
+// handleURLDisplay display remote name && pull&push url
+func handleURLDisplay(gits []*GitRepo) {
+	for _, g := range gits {
+		if len(g.Remotes) == 0 {
+			fmt.Println(g.Dir, ":")
+			fmt.Println("-> ", "no upstream remote")
+			fmt.Println()
+			continue
+		}
+		fmt.Print(g.URLWithDirString())
+	}
+}
+
+// handleDefaultDisplay display remote name && branch -> status
+func handleDefaultDisplay(gits []*GitRepo) {
+	for _, g := range gits {
+		if len(g.Remotes) == 0 {
+			fmt.Println(g.Dir, ":")
+			fmt.Println("-> ", "no upstream remote")
+			fmt.Println()
+			continue
+		}
+		fmt.Print(g.DefaultString())
+	}
 }
 
 // getDirs get all dirs under directory, exclude .git directory
