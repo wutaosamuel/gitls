@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"sync"
 
-	// gogit "github.com/go-git/go-git/v5"
-	gogit "github.com/go-git/go-git"
+	gogit "github.com/go-git/go-git/v5"
+	// gogit "github.com/go-git/go-git"
 )
 
 // GitRepo contain infomation of remotes && branches
