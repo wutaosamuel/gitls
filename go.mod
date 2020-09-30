@@ -1,4 +1,4 @@
-module gitls
+module github.com/wutaosamuel/gitls
 
 go 1.15
 

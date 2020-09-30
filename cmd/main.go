@@ -1,7 +1,7 @@
 package main
 
 import (
-	"../../gitls"
+	"github.com/wutaosamuel/gitls"
 )
 
 func main() {
