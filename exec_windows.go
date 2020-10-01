@@ -5,6 +5,7 @@ package gitls
 import (
 	"os"
 	"os/exec"
+	"syscall"
 )
 
 // RunGitShow run git command
